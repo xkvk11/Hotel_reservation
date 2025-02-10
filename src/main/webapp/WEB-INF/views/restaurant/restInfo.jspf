@@ -1,0 +1,95 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
+<div class="modal fade" id="restInfoModal" tabindex="-1" role="dialog"
+	aria-labelledby="restInfoModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="restInfoModalLabel">레스토랑 상세정보</h4>
+			</div>
+			<div class="modal-body">
+				<form id="restInfoForm" action="${root}/restaurant" method="post">
+                	<input type="hidden" name="restNo" id = "restNo" value="">
+					<div class="form-group">
+						<label for="restName">레스토랑 명</label>
+						<p class="form-control-static" id="restName"></p>
+					</div>
+					<div class="form-group">
+						<label for="restInfo">레스토랑 주소</label>
+						<p class="form-control-static" id="restAddress"></p>
+					</div>
+					<div class="form-group">
+						<label for="restInfo">레스토랑 설명</label>
+						<p class="form-control-static" id="restInfo"></p>
+					</div>
+					<div class="form-group">
+						<label for="restMenu">대표 메뉴</label>
+						<p class="form-control-static" id="restMenu"></p>
+					</div>
+					<div class="form-group">
+						<label for="restPhone">전화번호</label>
+						<p class="form-control-static" id="restPhone"></p>
+					</div>
+					<div class="form-group">
+						<label for="restTime">영업시간</label>
+						<p class="form-control-static" id="restTime"></p>
+					</div>
+					<div class="form-group">
+					    <label for="restTime">리뷰</label>
+					    <a href="#" 
+					       class="btn btn-info" 
+					       role="button"
+					       data-toggle="modal" 
+					       data-target="#restReviewsModal"
+					       onclick="showReviewsFromInfo()"
+					       data-dismiss="modal"
+					       style="display: block; width: auto; margin-top: 5px;">
+					       리뷰 확인
+					    </a>
+					</div>
+
+
+					<c:choose>
+						<c:when test="${empty sessionScope.loggedInUser}">
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default"
+									data-dismiss="modal">취소</button>
+								<a href="#" class="btn btn-primary" role="button"
+									data-toggle="modal" data-target="#loginModal"
+									data-dismiss="modal">로그인</a>
+							</div>
+						</c:when>
+						<c:otherwise>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default"
+									data-dismiss="modal">취소</button>
+								<a href="#" class="btn btn-primary" role="button"
+									data-toggle="modal" data-target="#reservationModal">예약</a>
+							</div>
+						</c:otherwise>
+					</c:choose>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+function showReviewsFromInfo() {
+    // restInfo 모달에서 현재 표시 중인 레스토랑 정보 가져오기
+    var restNo = document.querySelector('#restInfoModal input[name="restNo"]').value;
+    var restName = document.querySelector('#restInfoModal #restName').textContent;
+    
+    // 약간의 지연을 주어 모달 전환이 부드럽게 되도록 함
+    setTimeout(() => {
+        // 리뷰 모달 설정
+        document.getElementById('reviewRestName').textContent = restName;
+        loadRestaurantReviews(restNo);
+    }, 200);
+}
+</script>

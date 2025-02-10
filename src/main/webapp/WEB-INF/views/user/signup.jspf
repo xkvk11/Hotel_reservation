@@ -1,0 +1,199 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>	
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<div class="modal fade" id="signupModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="signupModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="signupModalLabel">회원가입</h4>
+            </div>
+            <div class="modal-body">
+                <form id="signupForm" action="./" method="post">
+                    <div class="form-group">
+                        <label for="name">이름</label>
+                        <input type="text" class="form-control" id="name" name="userName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">이메일</label>
+                        <input type="email" class="form-control" id="userEmail" name="userEmail" placeholder="you@example.com" required>
+                        <button type="button" id="checkEmailBtn" class="btn btn-info" style="margin-top: 5px;">중복 확인</button>
+                        <span id="emailCheckMessage"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userPassword">비밀번호</label>
+                        <input type="password" class="form-control" id="userPassword" name="userPw" required>
+                        <span id="passwordHelp" class="help-block"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">비밀번호 확인</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                        <span id="confirmPasswordHelp" class="help-block"></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">연락처</label>
+                        <input type="tel" class="form-control" id="phone" name="userPhone" required>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="agreement" name="agreement" required> 
+                                개인정보 수집 및 이용에 동의합니다.
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">취소</button>
+                        <button type="submit" class="btn btn-primary" id="signupSubmitBtn" disabled>가입하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    var $userPassword = $('#userPassword');
+    var $confirmPassword = $('#confirmPassword');
+    var $submitBtn = $('#signupSubmitBtn');
+    var $passwordHelp = $('#passwordHelp');
+    var $confirmPasswordHelp = $('#confirmPasswordHelp');
+    var emailValid = false;
+
+    // 폼 초기화 함수
+    function resetSignupForm() {
+        $('#name').val('');
+        $('#userEmail').val('');
+        $('#userPassword').val('');
+        $('#confirmPassword').val('');
+        $('#phone').val('');
+        $('#agreement').prop('checked', false);
+        $('#emailCheckMessage').text('');
+        $('#passwordHelp').text('');
+        $('#confirmPasswordHelp').text('');
+        emailValid = false;
+        $submitBtn.prop('disabled', true);
+    }
+
+    // 취소 버튼 클릭 시 폼 초기화
+    $('#signupModal .btn-default[data-dismiss="modal"]').on('click', function() {
+        resetSignupForm();
+    });
+    
+    // 닫기(X) 버튼 클릭 시 폼 초기화
+    $('#signupModal .close').on('click', function() {
+        resetSignupForm();
+    });
+
+    function validatePassword() {
+        var password = $userPassword.val();
+        var confirmPassword = $confirmPassword.val();
+        var isValid = true;
+		
+        var lengthValid = password.length >= 8;
+        var hasUpperCase = /[A-Z]/.test(password);
+        var hasLowerCase = /[a-z]/.test(password);
+        var hasNumbers = /\d/.test(password);
+        var hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+        var message = [];
+        if (!lengthValid) message.push("최소 8자 이상");
+        if (!hasUpperCase) message.push("대문자");
+        if (!hasLowerCase) message.push("소문자");
+        if (!hasNumbers) message.push("숫자");
+        if (!hasSpecialChar) message.push("특수문자(!@#$%^&*(),.?\":{}|<>)");
+
+        if (message.length > 0) {
+            $passwordHelp.html("비밀번호는 다음을 포함해야 합니다:<br>" + message.join(", "))
+                        .css('color', 'red');
+            isValid = false;
+        } else {
+            $passwordHelp.text("사용 가능한 비밀번호입니다 :)")
+                        .css('color', 'green');
+        }
+        
+        // 비밀번호 확인
+        if (confirmPassword.length === 0) {
+            $confirmPasswordHelp.text('비밀번호 확인을 입력해주세요.').css('color', 'black');
+            isValid = false;
+        } else if (password !== confirmPassword) {
+            $confirmPasswordHelp.text('비밀번호가 일치하지 않습니다 :(').css('color', 'red');
+            isValid = false;
+        } else {
+            $confirmPasswordHelp.text('비밀번호가 일치합니다 :)').css('color', 'green');
+        }
+
+        $submitBtn.prop('disabled', !isValid || !emailValid);
+        return isValid;
+    }
+    
+    $userPassword.attr('placeholder', '8자 이상, 대/소문자, 숫자, 특수문자 포함');
+    $userPassword.on('input', validatePassword);
+    $confirmPassword.on('input', validatePassword);
+
+    $('#signupForm').on('submit', function(e) {
+        e.preventDefault(); 
+        if (validatePassword() && emailValid) {
+            var name = $('#name').val().trim();
+            var email = $('#userEmail').val().trim();
+            var phone = $('#phone').val().trim();
+
+            if (name === '' || email === '' || phone === '') {
+                alert('모든 필드를 입력해주세요.');
+                return;
+            }
+
+            if (!$('#agreement').is(':checked')) {
+                alert('개인정보 수집 및 이용에 동의해주세요.');
+                return;
+            }
+
+            alert('회원가입이 완료되었습니다!'); 
+            this.submit(); 
+        } else {
+            alert('입력 정보를 다시 확인해주세요.');
+        }
+    });
+    
+    $('#checkEmailBtn').on('click', function(e) {
+        e.preventDefault();
+        var emailValue = $('#userEmail').val().trim();
+        console.log("입력된 이메일:", emailValue);
+        
+        if (emailValue === '') {
+            $('#emailCheckMessage').text('이메일을 입력해주세요.').css('color', 'red');
+            return;
+        }
+        
+        $.ajax({
+            url: '/check-email',
+            type: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            data: { userEmail: emailValue },
+            success: function(response) {
+                console.log("서버 응답:", response);
+                if (response === "exists") {
+                    $('#emailCheckMessage').text('이미 사용 중인 이메일입니다.').css('color', 'red');
+                    emailValid = false;
+                } else {
+                    $('#emailCheckMessage').text('사용 가능한 이메일입니다.').css('color', 'green');
+                    emailValid = true;
+                }
+                validatePassword();
+            },
+            error: function(xhr, status, error) {
+                console.error("Ajax 오류:", error);
+                $('#emailCheckMessage').text('서버 오류가 발생했습니다. 다시 시도해주세요.').css('color', 'red');
+                emailValid = false;
+                validatePassword();
+            }
+        });
+    });
+});
+</script>

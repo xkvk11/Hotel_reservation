@@ -1,0 +1,173 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<div class="modal fade" id="restReviewsModal" tabindex="-1" role="dialog" aria-labelledby="restReviewsModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="restReviewsModalLabel">
+                    <span id="reviewRestName"></span> 리뷰
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="review-summary">
+                    <p>전체 리뷰 <span id="reviewCount">0</span>개</p>
+                    <div id="averageScore" class="average-score"></div>
+                </div>
+                <div id="reviewsList" class="reviews-container">
+                    <!-- 리뷰 목록이 여기에 동적으로 추가됨 -->
+                </div> 
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 이름 마스킹 함수 추가
+function maskName(name) {
+    if (!name) return '사용자';
+    if (name.length <= 1) return name;
+    if (name.length === 2) return name.charAt(0) + '*';
+    return name.charAt(0) + '*'.repeat(name.length - 1);
+}
+
+function showReviews(button) {
+    var restNo = button.getAttribute('data-restno');
+    var restName = button.getAttribute('data-name');
+    
+ 	// 모달 제목에 레스토랑 이름 설정
+    document.getElementById('reviewRestName').textContent = restName;
+ 	//리뷰 로딩
+    loadRestaurantReviews(restNo);
+}
+
+function loadRestaurantReviews(restNo) {
+    const reviewsContainer = document.getElementById('reviewsList');
+    reviewsContainer.innerHTML = '<div class="loading">리뷰를 불러오는 중...</div>';
+    
+    fetch(`${root}/api/reviews/\${restNo}`)
+        .then(response => response.json())
+        .then(reviews => {
+            if (!reviews || reviews.length === 0) {
+                reviewsContainer.innerHTML = '<div class="no-review">아직 작성된 리뷰가 없습니다.</div>';
+                document.getElementById('reviewCount').textContent = '0';
+                document.getElementById('averageScore').innerHTML = '';
+                return;
+            }
+
+            // 리뷰 개수 업데이트
+            document.getElementById('reviewCount').textContent = reviews.length;
+
+            // 평균 평점 계산 및 표시
+            const averageScore = reviews.reduce((sum, review) => sum + review.reviewScore, 0) / reviews.length;
+            document.getElementById('averageScore').innerHTML = 
+                `<span class="avg-score">평균 평점: \${averageScore.toFixed(1)}</span>
+                 <span class="review-star">\${'★'.repeat(Math.round(averageScore))}</span>`;
+
+            // 리뷰 목록 표시 (마스킹된 이름 사용)
+            reviewsContainer.innerHTML = reviews.map(review => `
+                <div class="review-item">
+                    <div class="review-header">
+                        <strong>\${maskName(review.userName)}</strong>
+                        <span class="review-star">\${'★'.repeat(review.reviewScore || 0)}</span>
+                    </div>
+                    <div class="review-content">\${review.reviewContent || ''}</div>
+                    <div class="review-date">\${formatDate(review.createDate)}</div>
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            console.error('리뷰를 불러오는 중 오류가 발생했습니다:', error);
+            reviewsContainer.innerHTML = '<div class="no-review">리뷰를 불러오는데 실패했습니다.</div>';
+        });
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `\${year}-\${month}-\${day}`;
+}
+</script>
+<style>
+.reviews-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.review-summary {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.average-score {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avg-score {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.review-item {
+    border-bottom: 1px solid #eee;
+    padding: 15px 0;
+    margin-bottom: 10px;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.review-star {
+    color: #ffd700;
+    font-size: 1.2em;
+    letter-spacing: 2px;
+}
+
+.review-content {
+    color: #333;
+    margin: 8px 0;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+.review-date {
+    color: #999;
+    font-size: 0.9em;
+    text-align: right;
+    margin-top: 5px;
+}
+
+.no-review {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+    font-size: 1.1em;
+}
+
+.loading {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+</style>

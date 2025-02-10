@@ -1,0 +1,17 @@
+CREATE TABLE `review` (
+	`reviewNo` INT NOT NULL AUTO_INCREMENT,
+	`userNo` INT NULL DEFAULT NULL,
+	`restNo` INT NULL DEFAULT NULL,
+	`reviewContent` TEXT NOT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`reviewScore` INT NULL DEFAULT '1',
+	`createDate` TIMESTAMP NOT NULL DEFAULT (now()),
+	PRIMARY KEY (`reviewNo`) USING BTREE,
+	INDEX `userNo` (`userNo`) USING BTREE,
+	INDEX `restNo` (`restNo`) USING BTREE,
+	CONSTRAINT `review_ibfk_1` FOREIGN KEY (`userNo`) REFERENCES `users` (`userNo`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+	CONSTRAINT `review_ibfk_2` FOREIGN KEY (`restNo`) REFERENCES `restaurant` (`restNo`) ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=1
+;

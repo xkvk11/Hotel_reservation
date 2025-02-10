@@ -1,0 +1,36 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<ul class="nav navbar-nav navbar-right">
+	<c:choose>
+		<c:when test="${empty sessionScope.loggedInUser}">
+			<li><a href="#" data-toggle="modal" data-target="#signupModal"><span
+					class="glyphicon glyphicon-user"></span> 회원가입</a></li>
+			<li><a href="#" data-toggle="modal" data-target="#loginModal"><span
+					class="glyphicon glyphicon-log-in"></span> 로그인</a></li>
+		</c:when>
+		<c:otherwise>
+			<li style="display: flex; align-items: center; padding: 15px;">
+				<span style="color: #333; font-size: 14px;">
+					${sessionScope.loggedInUser.userName}님 환영합니다! </span>
+			</li>
+			<li><a href="${root}/logout"> <span
+					class="glyphicon glyphicon-log-out"></span>로그아웃
+			</a></li>
+		</c:otherwise>
+	</c:choose>
+</ul>
+</div>
+</div>
+</nav>
+
+<!-- 로그인 실패 메시지 -->
+<c:if test="${not empty errorMessage}">
+	<div class="alert alert-danger">${errorMessage}</div>
+</c:if>
+
+<!-- 로그인 모달  -->
+<%@ include file="../user/login.jspf"%>
+
+<!-- 회원가입 모달 -->
+<%@ include file="../user/signup.jspf"%>
+

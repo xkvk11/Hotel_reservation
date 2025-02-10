@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+		<property name="location"  value="classpath:/db.properties"/>
+	</bean>
+	<bean id = "dataSource"
+	class = "org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value = "${mysql.driver}"/>
+		<property name="url" value = "${mysql.url}"/>	
+		<property name="username" value ="${mysql.user}"/>
+		<property name="password" value ="${mysql.password}"/>
+	</bean>
+	<bean id = "sqlSessionFactory"
+	class = "org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref = "dataSource"/>
+	</bean>
+	<mybatis-spring:scan base-package="com.team2.reservation"/>
+		
+</beans>
